@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Directory Ujian Makmal - Hospital Beluran</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111;}
+body{margin:0; background:#f6f7fb;}
+header{padding:18px 20px; background:white; border-bottom:1px solid #e6e6ef;}
+.wrap{max-width:1100px; margin:0 auto;}
+.row{display:flex; gap:12px; flex-wrap:wrap; align-items:center;}
+.card{background:white; border:1px solid #e6e6ef; border-radius:14px; padding:14px;}
+input,select,button{padding:10px 12px; border-radius:10px; border:1px solid #d7d7e5; background:white;}
+button{cursor:pointer;}
+table{width:100%; border-collapse:collapse; font-size:14px;}
+th,td{padding:10px; border-bottom:1px solid #eee; vertical-align:top;}
+th{background:#fafafe; text-align:left; position:sticky; top:0;}
+.pill{display:inline-block; padding:3px 9px; border:1px solid #ddd; border-radius:999px; font-size:12px; background:#fff;}
+.muted{color:#666; font-size:12px;}
+.grid{display:grid; grid-template-columns: 1.25fr .75fr; gap:12px; margin-top:12px;}
+@media (max-width: 900px){ .grid{grid-template-columns:1fr;} }
+.detail h3{margin:0 0 10px;}
+.detail .kv{display:grid; grid-template-columns:170px 1fr; gap:8px 12px; font-size:14px;}
+.detail .kv div:nth-child(odd){color:#555;}
+.footer{padding:14px 0; text-align:center; color:#666; font-size:12px;}
+small{color:#777;}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between;">
+      <div>
+        <div style="font-weight:700; font-size:18px;">Directory Ujian Makmal</div>
+        <div class="muted">Hospital Beluran • Data dari fail Excel (TEST CATALOG.xlsx)</div>
+      </div>
+      <div class="row">
+        <button id="print">Print / Save PDF</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" style="padding:14px 20px 0;">
+  <div class="card">
+    <div class="row">
+      <input id="q" placeholder="Cari: nama ujian / unit / spesimen / tube / TAT..." style="flex:1; min-width:260px;">
+      <select id="unit" style="min-width:220px;">
+        <option value="">Semua Unit</option>
+      </select>
+      <select id="sampel" style="min-width:200px;">
+        <option value="">Semua Spesimen</option>
+      </select>
+      <select id="tube" style="min-width:220px;">
+        <option value="">Semua Tube/Bekas</option>
+      </select>
+      <button id="clear">Reset</button>
+    </div>
+    <div class="muted" id="meta" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card" style="overflow:auto; max-height:70vh;">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th style="min-width:240px;">Ujian</th>
+            <th style="min-width:170px;">Unit</th>
+            <th style="min-width:140px;">Spesimen</th>
+            <th style="min-width:160px;">Tube/Bekas</th>
+            <th style="min-width:140px;">TAT</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="muted" style="padding-top:10px;">
+        <small>Tip: Klik mana-mana baris untuk lihat butiran penuh di sebelah kanan.</small>
+      </div>
+    </div>
+
+    <div class="card detail" id="detail">
+      <div class="muted">Klik ujian di sebelah kiri untuk lihat butiran.</div>
+    </div>
+  </div>
+
+  <div class="footer">Dibina automatik daripada Excel • Versi offline (tak perlu internet)</div>
+</main>
+
+<script>
+const DATA = [{"bil": "1", "unit": "Chemical Pathology", "ujian": "Alanine transaminase", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "2", "unit": "Chemical Pathology", "ujian": "Albumin", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "3", "unit": "Chemical Pathology", "ujian": "Alkaline phosphatase", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "4", "unit": "Chemical Pathology", "ujian": "Aspartate transaminase", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "5", "unit": "Chemical Pathology", "ujian": "Bilirubin total", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "", "unit": "Chemical Pathology", "ujian": "Bilirubin direct", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "6", "unit": "Chemical Pathology", "ujian": "Blood Gas (ABG/VBG)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "Send immediately in cold chain. Sample with needle will be rejected.", "tube": "Heparinized Syringe", "sampel": "Blood", "volume": "as per collection", "reject": "", "tat": "1  Jam", "keputusan": "", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "7", "unit": "Chemical Pathology", "ujian": "Chloride", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "8", "unit": "Chemical Pathology", "ujian": "Creatinine", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "9", "unit": "Chemical Pathology", "ujian": "Creatinine kinase", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "10", "unit": "Chemical Pathology", "ujian": "Cholesterol total", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "11", "unit": "Chemical Pathology", "ujian": "Glucose", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Potassium Oxalate Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "12", "unit": "Chemical Pathology", "ujian": "Glucose tolerance test", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Potassium Oxalate Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "13", "unit": "Chemical Pathology", "ujian": "Potassium", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "14", "unit": "Chemical Pathology", "ujian": "Protein, total", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "15", "unit": "Chemical Pathology", "ujian": "Sodium", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "16", "unit": "Chemical Pathology", "ujian": "Triglycerides", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "17", "unit": "Chemical Pathology", "ujian": "Urea", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "18", "unit": "Chemical Pathology", "ujian": "Uric acid", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "19", "unit": "Chemical Pathology", "ujian": "Stool occult blood", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "Stool", "volume": "Hard (Peanut size), Soft/Watery (3mL)", "reject": "", "tat": "3 hari berkerja", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "20", "unit": "Chemical Pathology", "ujian": "Urine biochemistry (dipstick)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "Urine", "volume": "20 ml", "reject": "", "tat": "1 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "21", "unit": "Chemical Pathology", "ujian": "Urine pregnancy test (dipstick)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "Urine", "volume": "20 ml", "reject": "", "tat": "1 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "22", "unit": "Chemical Pathology", "ujian": "Urine drug of abuse screening test", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "Urine", "volume": "20 ml", "reject": "", "tat": "3 hari berkerja", "keputusan": "Manual (Printing of Results)", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "23", "unit": "Chemical Pathology", "ujian": "Calcium (akan ditawarkan bermula bulan Jun 2026)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "24", "unit": "Chemical Pathology", "ujian": "Magnesium   (akan ditawarkan bermula bulan Jun 2026)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "25", "unit": "Chemical Pathology", "ujian": "Phosphate  (akan ditawarkan bermula bulan Jun 2026)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "26", "unit": "Chemical Pathology", "ujian": "HDL Cholesterol ( (akan ditawarkan bermula bulan Jun 2026))", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "27", "unit": "Chemical Pathology", "ujian": "CKMB  (akan ditawarkan bermula bulan Jun 2026)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "4 ml", "reject": "", "tat": "Rutin : 4 Jam\nUrgent: 90 minit", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "28", "unit": "Microbiology", "ujian": "AFB direct smear", "masa_hantar": "sama seperti di atas", "pre_analitikal": "BORANG TBIS 20C.\nSample from Outpatient Department is not acceptable during weekend", "tube": "Sterile Container", "sampel": "Sputum", "volume": "As much as possible", "reject": "", "tat": "24 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "29", "unit": "Microbiology", "ujian": "Blood Smear Malaria Parasite", "masa_hantar": "sama seperti di atas", "pre_analitikal": "Thick smear: 1 cm diameter. Label frosted end with pencil. \nMalaria PCR is compulsory for all new Malaria Positive patient.", "tube": "Thick and thin smear on one slide", "sampel": "Glass Slide", "volume": "as per collection", "reject": "", "tat": "2 Jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "30", "unit": "Microbiology", "ujian": "Dengue NS1/ IgG/IgM", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "5 ml", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "31", "unit": "Microbiology", "ujian": "Gram stain", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "Body Fluid", "volume": "-", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "32", "unit": "Microbiology", "ujian": "Leptospira rapid test", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Plain Tube", "sampel": "Blood", "volume": "5ml", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "33", "unit": "Microbiology", "ujian": "Stool ova and cyst", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "Fresh stool sample required", "tube": "Sterile Container", "sampel": "Stool", "volume": "Hard (Peanut size), Soft/Watery (3mL)", "reject": "", "tat": "3 Hari berkerja", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "34", "unit": "Microbiology", "ujian": "Stool FEME", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "Fresh stool sample required", "tube": "Sterile Container", "sampel": "Stool", "volume": "Hard (Peanut size), Soft/Watery (3mL)", "reject": "", "tat": "3 Hari berkerja", "keputusan": "", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "35", "unit": "Microbiology", "ujian": "Skin Scraping for Leprosy", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "Borang LIS 102A\nSkin Scraping procedures are performed at TB Clinic", "tube": "Glass Slide", "sampel": "Glass Slide", "volume": "as per collection", "reject": "", "tat": "48 Jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "36", "unit": "Microbiology", "ujian": "Covid-19 RTK Ag", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "NPS", "volume": "as per collection", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "37", "unit": "Microbiology", "ujian": "Respiratory Virus Rapid Test Antigen (Ujian akan ditawarkan bermula bulan April 2026)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "Permintaan ujian akan disaring oleh Pegawai Perubatan Y/M Unit Patologi", "tube": "Sterile Container", "sampel": "NPS", "volume": "as per collection", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "38", "unit": "Hematology", "ujian": "Body Fluid FEME", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "", "tube": "Universal Container", "sampel": "Body Fluid", "volume": "5 -20 ml", "reject": "", "tat": "3 hari berkerja", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "39", "unit": "Hematology", "ujian": "Coagulation Profile", "masa_hantar": "sama seperti di atas", "pre_analitikal": "Underfilled/Overfilled sample akan ditolak", "tube": "Sodium Citrate Tube", "sampel": "Blood", "volume": "(To fill sample up to marked level on tube)", "reject": "", "tat": "4 Jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "40", "unit": "Hematology", "ujian": "Cell Count", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "", "tube": "Sterile Container", "sampel": "Blood", "volume": "2 ml", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "41", "unit": "Hematology", "ujian": "Erythrocyte sedimentation rate (ESR)", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "Minimum 1 ml", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "42", "unit": "Hematology", "ujian": "Full blood count (FBC)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "Minimum 1 ml", "reject": "", "tat": "Urgent - 45 minit\nRutin - 4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "43", "unit": "Hematology", "ujian": "G6PD Screening", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Blood Spot on filter paper", "sampel": "Blood spot on filter paper", "volume": "1 Filter paper/EDTA tube", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "44", "unit": "Hematology", "ujian": "Reticulocyte count", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "2.5 - 3.0 ml", "reject": "", "tat": "4 jam", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "45", "unit": "Hematology", "ujian": "Peripheral blood film morphology (PBF)", "masa_hantar": "Waktu berkerja biasa", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "2.5 - 3.0 ml", "reject": "", "tat": "14 hari berkerja\nUrgent: Discuss with HDOK before sending urgent PBF to HDOK", "keputusan": "LIS", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KKIA, KK TELUPID DAN KLINIK SEKITAR DAERAH BELURAN"}, {"bil": "46", "unit": "Transfusi", "ujian": "Blood Grouping (ABO and RhD)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "3 ml", "reject": "", "tat": "1 jam", "keputusan": "Manual (Printing of Results)", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KK TELUPID, KK NANGOH, KK TONGOD"}, {"bil": "47", "unit": "Transfusi", "ujian": "Coombs Test", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "3 ml", "reject": "", "tat": "1 jam", "keputusan": "Manual (Printing of Results)", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KK TELUPID, KK NANGOH, KK TONGOD"}, {"bil": "48", "unit": "Transfusi", "ujian": "Blood Grouping, Screen and Hold (GSH)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "5 ml", "reject": "", "tat": "1 jam", "keputusan": "Manual (Printing of Results)", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KK TELUPID, KK NANGOH, KK TONGOD"}, {"bil": "49", "unit": "Transfusi", "ujian": "Blood Grouping and Cross matching (GXM)", "masa_hantar": "sama seperti di atas", "pre_analitikal": "", "tube": "Edta Tube", "sampel": "Blood", "volume": "5 ml", "reject": "", "tat": "1 jam", "keputusan": "Manual (Printing of Results)", "urgent": "LIS/ Melalui Telefon", "kritikal": "LIS/ Melalui Telefon", "penghantar": "KK TELUPID, KK NANGOH, KK TONGOD"}];
+
+let filtered = [];
+let selectedIndex = -1;
+
+const el = (id)=>document.getElementById(id);
+const tbody = ()=>el('tbl').querySelector('tbody');
+
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function uniq(arr){ return [...new Set(arr.filter(v=>String(v).trim()!==''))].sort((a,b)=>String(a).localeCompare(String(b))); }
+
+function buildFilters(){
+  const units = uniq(DATA.map(r=>r.unit));
+  const sampels = uniq(DATA.map(r=>r.sampel));
+  const tubes = uniq(DATA.map(r=>r.tube));
+
+  el('unit').innerHTML = `<option value="">Semua Unit</option>` + units.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  el('sampel').innerHTML = `<option value="">Semua Spesimen</option>` + sampels.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  el('tube').innerHTML = `<option value="">Semua Tube/Bekas</option>` + tubes.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+}
+
+function applyFilters(resetSelection=false){
+  const q = el('q').value.toLowerCase().trim();
+  const unit = el('unit').value;
+  const sampel = el('sampel').value;
+  const tube = el('tube').value;
+
+  filtered = DATA.filter(r=>{
+    if (unit && r.unit !== unit) return false;
+    if (sampel && r.sampel !== sampel) return false;
+    if (tube && r.tube !== tube) return false;
+    if (!q) return true;
+    const hay = [
+      r.ujian, r.unit, r.sampel, r.tube, r.volume, r.tat,
+      r.masa_hantar, r.pre_analitikal, r.reject, r.keputusan, r.urgent, r.kritikal, r.penghantar
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  });
+
+  renderTable();
+  el('meta').textContent = `Jumlah ujian: ${DATA.length} | Dipaparkan: ${filtered.length}`;
+
+  if (resetSelection){ selectedIndex=-1; renderDetail(null); }
+}
+
+function renderTable(){
+  tbody().innerHTML = filtered.map((r, idx)=>`
+    <tr data-idx="${idx}" style="cursor:pointer; ${idx===selectedIndex?'background:#f1f5ff':''}">
+      <td>
+        <div style="font-weight:600;">${escapeHtml(r.ujian)}</div>
+        <div class="muted">Bil: ${escapeHtml(r.bil)}</div>
+      </td>
+      <td>${r.unit ? `<span class="pill">${escapeHtml(r.unit)}</span>` : ''}</td>
+      <td>${r.sampel ? `<span class="pill">${escapeHtml(r.sampel)}</span>` : ''}</td>
+      <td>${escapeHtml(r.tube)}</td>
+      <td>${escapeHtml(r.tat)}</td>
+    </tr>
+  `).join('');
+
+  [...tbody().querySelectorAll('tr')].forEach(tr=>{
+    tr.addEventListener('click', ()=>{
+      selectedIndex = Number(tr.dataset.idx);
+      renderTable();
+      renderDetail(filtered[selectedIndex] || null);
+    });
+  });
+}
+
+function kv(k,v){ return (v && String(v).trim()!=='') ? `<div>${escapeHtml(k)}</div><div>${escapeHtml(v)}</div>` : ''; }
+
+function renderDetail(r){
+  const box = el('detail');
+  if (!r){ box.innerHTML = `<div class="muted">Klik ujian di sebelah kiri untuk lihat butiran.</div>`; return; }
+  box.innerHTML = `
+    <h3>${escapeHtml(r.ujian)} <span class="pill">${escapeHtml(r.unit)}</span></h3>
+    <div class="kv">
+      ${kv('Bil', r.bil)}
+      ${kv('Unit', r.unit)}
+      ${kv('Spesimen', r.sampel)}
+      ${kv('Tube/Bekas', r.tube)}
+      ${kv('Isipadu Diperlukan', r.volume)}
+      ${kv('TAT (LTAT)', r.tat)}
+      ${kv('Masa penghantaran sampel', r.masa_hantar)}
+      ${kv('Kriteria Pre-Analitikal', r.pre_analitikal)}
+      ${kv('Specific rejection', r.reject)}
+      ${kv('Cara keputusan disampaikan', r.keputusan)}
+      ${kv('Laporan Urgent', r.urgent)}
+      ${kv('Laporan Kritikal', r.kritikal)}
+      ${kv('Hospital/KK penghantar sampel', r.penghantar)}
+    </div>
+  `;
+}
+
+el('q').addEventListener('input', ()=>applyFilters());
+el('unit').addEventListener('change', ()=>applyFilters(true));
+el('sampel').addEventListener('change', ()=>applyFilters(true));
+el('tube').addEventListener('change', ()=>applyFilters(true));
+el('clear').addEventListener('click', ()=>{ el('q').value=''; el('unit').value=''; el('sampel').value=''; el('tube').value=''; applyFilters(true); });
+el('print').addEventListener('click', ()=>window.print());
+
+buildFilters();
+applyFilters(true);
+</script>
+</body>
+</html>
